@@ -1,26 +1,205 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------- */
+/* MBTI Cosmos design tokens (see .superpowers/sdd Task 1 brief)          */
+/* ---------------------------------------------------------------------- */
+@theme {
+  /* Base surfaces */
+  --color-bg: #05060f;
+  --color-bg-elev: #0b0d1c;
+  --color-surface: rgb(255 255 255 / 0.04);
+  --color-border: rgb(255 255 255 / 0.08);
+  --color-fg: #eef0ff;
+  --color-muted: #9aa0c3;
+
+  /* Temperaments */
+  --color-nt: #a78bfa;
+  --color-nf: #34d399;
+  --color-sj: #60a5fa;
+  --color-sp: #fbbf24;
+
+  /* Relation groups */
+  --color-rel-complementary: #5eead4;
+  --color-rel-similar: #a5b4fc;
+  --color-rel-asymmetric: #f0abfc;
+  --color-rel-challenging: #fda4af;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-arabic: var(--font-arabic);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+ * Map shadcn's semantic CSS variables onto our dark-cosmic tokens, so every
+ * shadcn/ui component (dialog, tooltip, tabs, toggle-group, ...) inherits
+ * the same palette instead of the library's default light/neutral theme.
+ * `--accent` intentionally defaults to the NT violet, but individual type
+ * pages may re-scope it locally (e.g. `style={{ '--accent': typeColor }}`)
+ * per the global "data-driven colors via --accent" convention — `--ring`
+ * follows it automatically.
+ */
+:root {
+  --background: var(--color-bg);
+  --foreground: var(--color-fg);
+  --card: var(--color-bg-elev);
+  --card-foreground: var(--color-fg);
+  --popover: var(--color-bg-elev);
+  --popover-foreground: var(--color-fg);
+  --primary: var(--color-nt);
+  --primary-foreground: var(--color-bg);
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-fg);
+  --muted-foreground: var(--color-muted);
+  --accent: var(--color-nt);
+  --accent-foreground: var(--color-bg);
+  --destructive: #f43f5e;
+  --input: var(--color-surface);
+  --ring: var(--accent);
+  --chart-1: var(--color-nt);
+  --chart-2: var(--color-nf);
+  --chart-3: var(--color-sj);
+  --chart-4: var(--color-sp);
+  --chart-5: var(--color-rel-complementary);
+  --radius: 0.625rem;
+  --sidebar: var(--color-bg-elev);
+  --sidebar-foreground: var(--color-fg);
+  --sidebar-primary: var(--color-nt);
+  --sidebar-primary-foreground: var(--color-bg);
+  --sidebar-accent: var(--color-surface);
+  --sidebar-accent-foreground: var(--color-fg);
+  --sidebar-border: var(--color-border);
+  --sidebar-ring: var(--accent);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans h-full;
+  }
+
+  body {
+    @apply bg-background text-foreground min-h-full;
+    position: relative;
+  }
+
+  /* Fixed layered background: subtle nebula gradient + noise grain. */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  body::before {
+    z-index: -2;
+    background-image:
+      radial-gradient(
+        ellipse 80% 50% at 15% -10%,
+        rgb(139 92 246 / 0.1),
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 100% 0%,
+        rgb(45 212 191 / 0.08),
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 70% 60% at 0% 100%,
+        rgb(139 92 246 / 0.06),
+        transparent 60%
+      );
+  }
+
+  body::after {
+    z-index: -1;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Headings use the display font — except under RTL, where the Arabic
+     font takes over for all text (see [dir="rtl"] below). */
+  html:not([dir="rtl"]) :where(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-display);
+  }
+
+  [dir="rtl"] {
+    font-family: var(--font-arabic);
+    line-height: 1.65;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility glass {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+@utility text-gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--accent, var(--color-fg)) 0%,
+    var(--color-fg) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

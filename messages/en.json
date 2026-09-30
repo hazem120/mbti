@@ -1,0 +1,31 @@
+{
+  "common": {
+    "brand": "MBTI·Cosmos",
+    "localeNames": {
+      "en": "English",
+      "ar": "العربية"
+    },
+    "switchLanguage": "Switch language",
+    "skipToContent": "Skip to content",
+    "notFoundTitle": "Lost in the cosmos",
+    "notFoundDescription": "This page drifted out of orbit. Let's get you back.",
+    "backHome": "Back to home"
+  },
+  "nav": {
+    "ariaLabel": "Primary navigation",
+    "types": "Types",
+    "functions": "Functions"
+  },
+  "footer": {
+    "disclaimer": "For self-reflection and fun — not a clinical assessment.",
+    "credit": "Compatibility is based on socionics intertype relations, mapped through the cognitive function stack."
+  },
+  "home": {
+    "kicker": "16 minds, mapped",
+    "title": "Explore the cosmos of personality",
+    "subtitle": "A bilingual, dark-cosmic tour of the 16 MBTI types, their cognitive functions, and how they connect."
+  },
+  "type": {},
+  "compat": {},
+  "functions": {}
+}
