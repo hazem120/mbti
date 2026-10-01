@@ -10,6 +10,7 @@ import { fontVariables } from "@/lib/fonts";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { CursorGlow } from "@/components/motion/CursorGlow";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -53,6 +54,7 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <SmoothScroll>
+            <CursorGlow />
             <Header />
             <main className="flex-1">{props.children}</main>
             <Footer />

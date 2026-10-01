@@ -9,7 +9,8 @@
     "skipToContent": "تخطَّ إلى المحتوى",
     "notFoundTitle": "تائه في الفضاء",
     "notFoundDescription": "خرجت هذه الصفحة عن مدارها. دعنا نعيدك.",
-    "backHome": "العودة إلى الصفحة الرئيسية"
+    "backHome": "العودة إلى الصفحة الرئيسية",
+    "close": "إغلاق"
   },
   "nav": {
     "ariaLabel": "التنقل الرئيسي",
@@ -25,7 +26,70 @@
     "title": "استكشف كون الشخصية",
     "subtitle": "جولة ثنائية اللغة وداكنة كونية عبر أنماط MBTI الستة عشر، ووظائفها المعرفية، وكيفية ترابطها."
   },
-  "type": {},
+  "type": {
+    "positions": {
+      "dominant": "المهيمنة",
+      "auxiliary": "المساندة",
+      "tertiary": "الثالثة",
+      "inferior": "الدنيا"
+    }
+  },
   "compat": {},
-  "functions": {}
+  "functions": {},
+  "myType": {
+    "you": "أنت:",
+    "chipAria": "نمطك: {code}. افتح صفحته"
+  },
+  "devKit": {
+    "metaTitle": "مكتبة الواجهة",
+    "title": "مكتبة الواجهة",
+    "intro": "كل العناصر المشتركة في مكان واحد للمراجعة البصرية.",
+    "motionEyebrow": "الحركة",
+    "splitTitle": "SplitText",
+    "splitSample": "استكشف كون الشخصية",
+    "revealTitle": "Reveal",
+    "revealUp": "يصعد للأعلى",
+    "revealStart": "ينزلق من حافة البداية",
+    "revealEnd": "ينزلق من حافة النهاية",
+    "staggerTitle": "StaggerGroup",
+    "tiltTitle": "TiltCard",
+    "tiltBody": "حرّك المؤشر فوق هذه البطاقة.",
+    "spotlightTitle": "SpotlightBorder + GlassCard",
+    "spotlightBody": "توهّج يتبع المؤشر عبر السطح والحافة.",
+    "magneticTitle": "Magnetic",
+    "magneticButton": "اجذبني",
+    "countTitle": "CountUp",
+    "countTypes": "نمطًا",
+    "countFunctions": "وظائف",
+    "countPairs": "ثنائية",
+    "visualEyebrow": "المرئيات",
+    "orbTitle": "GlowOrb",
+    "orbStatic": "ثابت",
+    "badgeTitle": "TypeBadge",
+    "chipTitle": "FunctionChip",
+    "headingEyebrow": "قسم",
+    "headingTitle": "عنوان قسم",
+    "headingSubtitle": "عنوان تمهيدي وعنوان مقسّم ووصف تظهر بالتتابع.",
+    "stateEyebrow": "الحالة",
+    "myTypeTitle": "نمطي",
+    "myTypeCurrent": "الحالي:",
+    "myTypeNone": "لا شيء",
+    "myTypeClear": "مسح",
+    "sceneHovered": "المحدد في مخزن المشهد:",
+    "uiTitle": "Dialog وTooltip وTabs",
+    "openDialog": "افتح النافذة",
+    "dialogTitle": "نافذة زجاجية",
+    "dialogBody": "تظهر بتلاشٍ وتكبير فوق خلفية ضبابية.",
+    "tooltipTrigger": "مرّر المؤشر أو ركّز هنا",
+    "tooltipBody": "تلميح زجاجي",
+    "tabOne": "نظرة عامة",
+    "tabTwo": "الوظائف",
+    "tabThree": "العلاقات",
+    "tabPanelOne": "تظهر اللوحة الأولى بتلاشٍ.",
+    "tabPanelTwo": "ينزلق المؤشر بين التبويبات.",
+    "tabPanelThree": "تتنقل أسهم لوحة المفاتيح بين التبويبات.",
+    "motionTitle": "عناصر الحركة",
+    "visualTitle": "العناصر المرئية",
+    "headingBlock": "SectionHeading"
+  }
 }

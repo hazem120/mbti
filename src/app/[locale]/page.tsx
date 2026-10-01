@@ -13,7 +13,7 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
 
   return (
     <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center sm:px-6">
-      <p className="text-sm font-medium uppercase tracking-[0.2em] text-[--color-nt]">
+      <p className="text-sm font-medium uppercase tracking-[0.2em] text-nt">
         {t("kicker")}
       </p>
       <h1 className="text-gradient text-4xl font-semibold tracking-tight sm:text-5xl">

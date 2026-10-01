@@ -25,7 +25,7 @@ export function LanguageSwitcher() {
       type="button"
       onClick={() => router.replace(pathname, { locale: target })}
       aria-label={t("switchLanguage")}
-      className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--accent]"
+      className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)"
     >
       {t(`localeNames.${target}`)}
     </button>

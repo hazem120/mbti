@@ -9,7 +9,8 @@
     "skipToContent": "Skip to content",
     "notFoundTitle": "Lost in the cosmos",
     "notFoundDescription": "This page drifted out of orbit. Let's get you back.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "close": "Close"
   },
   "nav": {
     "ariaLabel": "Primary navigation",
@@ -25,7 +26,70 @@
     "title": "Explore the cosmos of personality",
     "subtitle": "A bilingual, dark-cosmic tour of the 16 MBTI types, their cognitive functions, and how they connect."
   },
-  "type": {},
+  "type": {
+    "positions": {
+      "dominant": "Dominant",
+      "auxiliary": "Auxiliary",
+      "tertiary": "Tertiary",
+      "inferior": "Inferior"
+    }
+  },
   "compat": {},
-  "functions": {}
+  "functions": {},
+  "myType": {
+    "you": "You:",
+    "chipAria": "Your type: {code}. Open its page"
+  },
+  "devKit": {
+    "metaTitle": "UI kit",
+    "title": "UI kit",
+    "intro": "Every shared primitive in one place, for visual review.",
+    "motionEyebrow": "Motion",
+    "splitTitle": "SplitText",
+    "splitSample": "Explore the cosmos of personality",
+    "revealTitle": "Reveal",
+    "revealUp": "Rises up",
+    "revealStart": "Slides from the start edge",
+    "revealEnd": "Slides from the end edge",
+    "staggerTitle": "StaggerGroup",
+    "tiltTitle": "TiltCard",
+    "tiltBody": "Move your pointer over this card.",
+    "spotlightTitle": "SpotlightBorder + GlassCard",
+    "spotlightBody": "A glow follows the cursor across the surface and border.",
+    "magneticTitle": "Magnetic",
+    "magneticButton": "Pull me",
+    "countTitle": "CountUp",
+    "countTypes": "types",
+    "countFunctions": "functions",
+    "countPairs": "pairings",
+    "visualEyebrow": "Visuals",
+    "orbTitle": "GlowOrb",
+    "orbStatic": "Static",
+    "badgeTitle": "TypeBadge",
+    "chipTitle": "FunctionChip",
+    "headingEyebrow": "Section",
+    "headingTitle": "A section heading",
+    "headingSubtitle": "Eyebrow, split title and subtitle revealed in sequence.",
+    "stateEyebrow": "State",
+    "myTypeTitle": "My type",
+    "myTypeCurrent": "Current:",
+    "myTypeNone": "None",
+    "myTypeClear": "Clear",
+    "sceneHovered": "Hovered in scene store:",
+    "uiTitle": "Dialog, Tooltip, Tabs",
+    "openDialog": "Open dialog",
+    "dialogTitle": "A glass dialog",
+    "dialogBody": "Fades and scales in over a blurred backdrop.",
+    "tooltipTrigger": "Hover or focus me",
+    "tooltipBody": "A glass tooltip",
+    "tabOne": "Overview",
+    "tabTwo": "Functions",
+    "tabThree": "Relations",
+    "tabPanelOne": "The first panel fades in.",
+    "tabPanelTwo": "The indicator glides between tabs.",
+    "tabPanelThree": "Keyboard arrows move between tabs.",
+    "motionTitle": "Motion primitives",
+    "visualTitle": "Visual primitives",
+    "headingBlock": "SectionHeading"
+  }
 }

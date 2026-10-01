@@ -77,8 +77,11 @@
  * the same palette instead of the library's default light/neutral theme.
  * `--accent` intentionally defaults to the NT violet, but individual type
  * pages may re-scope it locally (e.g. `style={{ '--accent': typeColor }}`)
- * per the global "data-driven colors via --accent" convention — `--ring`
- * follows it automatically.
+ * per the global "data-driven colors via --accent" convention. Note that
+ * `--ring: var(--accent)` is resolved on :root, so it does NOT follow a
+ * locally re-scoped `--accent`; components that must track the local accent
+ * use `ring-(--accent)` directly (Tailwind v4 var shorthand — the v3-style
+ * `ring-[--accent]` compiles to an invalid value in v4).
  */
 :root {
   --background: var(--color-bg);
@@ -178,8 +181,10 @@
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
-  backdrop-filter: blur(24px);
+  /* Prefixed first: Lightning CSS collapses the pair and keeps the last
+     one, so the unprefixed declaration must come last to survive. */
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
 
 @utility text-gradient {
@@ -191,6 +196,198 @@
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+}
+
+/* ---------------------------------------------------------------------- */
+/* UI kit (Task 6): GlowOrb + SpotlightBorder                             */
+/* ---------------------------------------------------------------------- */
+@layer components {
+  /* GlowOrb — pure CSS sphere. Driven by --orb-color / --orb-size /
+     --orb-intensity / --orb-delay (set inline by <GlowOrb>). Only transform
+     and opacity are animated, all via compositor-friendly keyframes. */
+  .orb {
+    --orb-color: var(--accent);
+    --orb-size: 96px;
+    --orb-intensity: 0.7;
+    --orb-delay: 0s;
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: var(--orb-size);
+    height: var(--orb-size);
+    isolation: isolate;
+  }
+
+  .orb-body {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+
+  .orb-halo,
+  .orb-core,
+  .orb-sheen {
+    position: absolute;
+    border-radius: 9999px;
+  }
+
+  /* Outer bloom: a soft radial falloff twice the orb's size. */
+  .orb-halo {
+    inset: -50%;
+    z-index: -1;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--orb-color) 55%, transparent) 0%,
+      color-mix(in oklab, var(--orb-color) 22%, transparent) 45%,
+      transparent 100%
+    );
+    opacity: calc(0.2 + var(--orb-intensity) * 0.8);
+  }
+
+  /* Lit sphere: off-centre highlight falling into a deep rim. */
+  .orb-core {
+    inset: 0;
+    background: radial-gradient(
+      circle at 34% 28%,
+      color-mix(in oklab, var(--orb-color) 30%, white) 0%,
+      var(--orb-color) 34%,
+      color-mix(in oklab, var(--orb-color) 55%, black) 74%,
+      color-mix(in oklab, var(--orb-color) 22%, black) 100%
+    );
+    box-shadow:
+      0 0 calc(var(--orb-size) * 0.35 * var(--orb-intensity))
+        color-mix(in oklab, var(--orb-color) 55%, transparent),
+      inset 0 0 calc(var(--orb-size) * 0.14)
+        color-mix(in oklab, white 22%, transparent);
+  }
+
+  /* Slowly rotating conic sheen for a living, iridescent surface. */
+  .orb-sheen {
+    inset: 0;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      color-mix(in oklab, white 45%, transparent) 50deg,
+      transparent 110deg,
+      transparent 190deg,
+      color-mix(in oklab, white 22%, transparent) 240deg,
+      transparent 300deg
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0.85;
+  }
+
+  .orb-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .orb[data-animated] .orb-body {
+    animation: orb-breathe 7s ease-in-out var(--orb-delay) infinite;
+    will-change: transform;
+  }
+
+  .orb[data-animated] .orb-halo {
+    animation: orb-pulse 7s ease-in-out var(--orb-delay) infinite;
+  }
+
+  .orb[data-animated] .orb-sheen {
+    animation: orb-spin 16s linear var(--orb-delay) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orb[data-animated] .orb-body,
+    .orb[data-animated] .orb-halo,
+    .orb[data-animated] .orb-sheen {
+      animation: none;
+    }
+  }
+
+  /* SpotlightBorder — cursor-following glow. --x/--y are written by JS on
+     pointermove; the layers fade in on hover / keyboard focus. */
+  .spotlight {
+    --x: 50%;
+    --y: 50%;
+    --spot-size: 380px;
+    --spot-border: 1px;
+    --spot-color: var(--accent);
+    position: relative;
+    isolation: isolate;
+  }
+
+  .spotlight-fill,
+  .spotlight-ring {
+    position: absolute;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .spotlight-fill {
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      var(--spot-size) circle at var(--x) var(--y),
+      color-mix(in oklab, var(--spot-color) 16%, transparent),
+      transparent 70%
+    );
+  }
+
+  /* Border ring: the gradient is masked down to a --spot-border-wide band. */
+  .spotlight-ring {
+    inset: calc(-1 * var(--spot-border));
+    z-index: 1;
+    padding: var(--spot-border);
+    background: radial-gradient(
+      calc(var(--spot-size) * 0.6) circle at var(--x) var(--y),
+      var(--spot-color),
+      color-mix(in oklab, var(--spot-color) 30%, transparent) 45%,
+      transparent 75%
+    );
+    -webkit-mask:
+      linear-gradient(black 0 0) content-box,
+      linear-gradient(black 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(black 0 0) content-box exclude,
+      linear-gradient(black 0 0);
+  }
+
+  .spotlight:hover > .spotlight-fill,
+  .spotlight:hover > .spotlight-ring,
+  .spotlight:focus-within > .spotlight-fill,
+  .spotlight:focus-within > .spotlight-ring {
+    opacity: 1;
+  }
+}
+
+@keyframes orb-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@keyframes orb-pulse {
+  0%,
+  100% {
+    opacity: calc(0.2 + var(--orb-intensity) * 0.8);
+  }
+  50% {
+    opacity: calc(0.1 + var(--orb-intensity) * 0.55);
+  }
+}
+
+@keyframes orb-spin {
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

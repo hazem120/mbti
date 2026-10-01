@@ -12,7 +12,7 @@ export async function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Link
           href="/"
-          className="text-gradient font-display text-lg font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--accent] rounded-md"
+          className="text-gradient font-display text-lg font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent) rounded-md"
         >
           {t("common.brand")}
         </Link>
@@ -23,13 +23,13 @@ export async function Header() {
         >
           <Link
             href="/"
-            className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--accent]"
+            className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)"
           >
             {t("nav.types")}
           </Link>
           <Link
             href="/functions/ni"
-            className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--accent]"
+            className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)"
           >
             {t("nav.functions")}
           </Link>
