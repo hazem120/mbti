@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo } from "react";
+import { Fragment, useMemo, type CSSProperties } from "react";
 import { motion, stagger as staggerFn, useReducedMotion, type Variants } from "motion/react";
 import { useLocale } from "next-intl";
 
@@ -12,6 +12,7 @@ import {
   type SplitMode,
 } from "@/lib/splitText";
 import { dirFor, isLocale } from "@/lib/i18n";
+import { unitGradients } from "@/lib/gradientText";
 import { EASE_OUT_EXPO, REDUCED_TRANSITION } from "@/components/motion/easing";
 
 const TAGS = {
@@ -52,6 +53,13 @@ export interface SplitTextProps {
   className?: string;
   /** Class applied to every animated unit (letter or word). */
   unitClassName?: string;
+  /**
+   * Paint one continuous gradient across the whole text (CSS colours, from
+   * line start to end; mirrors under RTL). Each unit gets its slice, so the
+   * gradient survives the per-unit animation. Serializable, so server
+   * components can pass it.
+   */
+  gradient?: readonly string[];
   id?: string;
 }
 
@@ -81,6 +89,7 @@ export function SplitText({
   amount = 0.4,
   className,
   unitClassName,
+  gradient,
   id,
 }: SplitTextProps) {
   const intlLocale = useLocale();
@@ -99,6 +108,35 @@ export function SplitText({
     [mode, words, dir],
   );
   const interval = stagger ?? (mode === "words" ? 0.07 : 0.028);
+
+  // Flat list of per-unit gradient slices (chars: one per letter).
+  const gradientKey = gradient?.join("|") ?? "";
+  const slices = useMemo(() => {
+    if (!gradientKey) return null;
+    const lengths =
+      mode === "words"
+        ? units.map((u) => [...u.word].length)
+        : units.flatMap((u) => u.chars.map(() => 1));
+    return unitGradients(lengths, gradientKey.split("|"), dir === "rtl");
+  }, [gradientKey, mode, units, dir]);
+  const sliceStyle = (index: number): CSSProperties | undefined =>
+    slices
+      ? {
+          backgroundImage: slices[index],
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          color: "transparent",
+        }
+      : undefined;
+  // Running letter index across words (chars mode) for `sliceStyle`.
+  const charOffsets = useMemo(
+    () =>
+      units.reduce<number[]>((offsets, _u, i) => {
+        offsets.push(i === 0 ? 0 : offsets[i - 1] + units[i - 1].chars.length);
+        return offsets;
+      }, []),
+    [units],
+  );
 
   const container: Variants = {
     hidden: {},
@@ -139,13 +177,18 @@ export function SplitText({
       {units.map((w, i) => (
         <Fragment key={i}>
           {mode === "words" ? (
-            <motion.span aria-hidden className={unitClass} variants={unit}>
+            <motion.span aria-hidden className={unitClass} variants={unit} style={sliceStyle(i)}>
               {w.word}
             </motion.span>
           ) : (
             <span aria-hidden className="inline-block whitespace-nowrap">
               {w.chars.map((ch, j) => (
-                <motion.span key={j} className={unitClass} variants={unit}>
+                <motion.span
+                  key={j}
+                  className={unitClass}
+                  variants={unit}
+                  style={sliceStyle(charOffsets[i] + j)}
+                >
                   {ch}
                 </motion.span>
               ))}

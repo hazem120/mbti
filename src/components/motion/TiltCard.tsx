@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import type { CSSProperties, PointerEvent, ReactNode } from "react";
 import {
   motion,
   useMotionValue,
@@ -48,7 +48,6 @@ export function TiltCard({
   const reduce = useReducedMotion();
   const finePointer = useFinePointer();
   const enabled = finePointer && !reduce;
-  const rectRef = useRef<DOMRect | null>(null);
 
   // Pointer position within the card, 0..1 on each axis (0.5 = centre).
   const px = useMotionValue(0.5);
@@ -65,21 +64,21 @@ export function TiltCard({
   const gx = useTransform(px, (v) => `${(v - 0.5) * 50}%`);
   const gy = useTransform(py, (v) => `${(v - 0.5) * 50}%`);
 
-  function onPointerEnter(e: PointerEvent<HTMLDivElement>) {
+  function onPointerEnter() {
     if (!enabled) return;
-    rectRef.current = e.currentTarget.getBoundingClientRect();
     hover.set(1);
   }
 
   function onPointerMove(e: PointerEvent<HTMLDivElement>) {
     if (!enabled) return;
-    const rect = rectRef.current ?? e.currentTarget.getBoundingClientRect();
+    // Measured per move (cheap): a cached rect goes stale when the page
+    // scrolls (Lenis) under a hovered card.
+    const rect = e.currentTarget.getBoundingClientRect();
     px.set(Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)));
     py.set(Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height)));
   }
 
   function onPointerLeave() {
-    rectRef.current = null;
     px.set(0.5);
     py.set(0.5);
     hover.set(0);

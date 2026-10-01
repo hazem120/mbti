@@ -364,6 +364,188 @@
   }
 }
 
+/* ---------------------------------------------------------------------- */
+/* Landing (Task 7): cosmic fallback, hero CTA, scroll cue, picker        */
+/* ---------------------------------------------------------------------- */
+@layer components {
+  /* Painted instantly behind the landing (and kept when WebGL is missing):
+     quadrant nebulae in the temperament colours over a tiled star dust. */
+  .cosmic-fallback {
+    background-image:
+      radial-gradient(
+        ellipse 32% 38% at 18% 26%,
+        color-mix(in oklab, var(--color-nt) 16%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 32% 38% at 82% 26%,
+        color-mix(in oklab, var(--color-nf) 13%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 32% 38% at 18% 78%,
+        color-mix(in oklab, var(--color-sj) 13%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 32% 38% at 82% 78%,
+        color-mix(in oklab, var(--color-sp) 11%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(1px 1px at 12% 18%, rgb(255 255 255 / 0.75), transparent),
+      radial-gradient(1px 1px at 63% 41%, rgb(255 255 255 / 0.55), transparent),
+      radial-gradient(1.5px 1.5px at 37% 72%, rgb(255 255 255 / 0.7), transparent),
+      radial-gradient(1px 1px at 86% 88%, rgb(255 255 255 / 0.5), transparent),
+      radial-gradient(1px 1px at 24% 54%, rgb(255 255 255 / 0.45), transparent),
+      radial-gradient(1.5px 1.5px at 78% 12%, rgb(255 255 255 / 0.6), transparent);
+    background-size:
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      211px 211px,
+      263px 263px,
+      331px 331px,
+      197px 197px,
+      283px 283px,
+      349px 349px;
+  }
+
+  /* Hero CTA: a slowly turning aurora ring in the four temperament colours.
+     The pill clips an oversized square whose conic gradient rotates (a
+     transform), so the ring colours travel around the border. */
+  .cta-aurora {
+    position: absolute;
+    inset: -1.5px;
+    z-index: -1;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: inherit;
+  }
+
+  .cta-aurora::before {
+    content: "";
+    width: 300%;
+    aspect-ratio: 1;
+    flex: none;
+    background: conic-gradient(
+      from 0deg,
+      var(--color-nt),
+      var(--color-nf),
+      var(--color-sj),
+      var(--color-sp),
+      var(--color-nt)
+    );
+    animation: orb-spin 6s linear infinite;
+  }
+
+  .cta-aurora-blur {
+    filter: blur(18px);
+    opacity: 0.55;
+    transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .group:hover > .cta-aurora-blur,
+  .group:focus-within > .cta-aurora-blur {
+    opacity: 0.9;
+  }
+
+  /* Hero entrance in pure CSS: runs from the first paint, before (and
+     without) hydration, so the hero's text paints early for LCP. Stagger
+     with an inline animation-delay. */
+  .hero-rise {
+    animation: hero-rise 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Scroll cue: a dot sliding down a capsule. */
+  .scroll-cue-dot {
+    animation: scroll-cue 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  /* Welcome-back chip: a slow bob. */
+  .float-soft {
+    animation: float-soft 6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-rise {
+      animation: hero-fade 0.35s ease-out both;
+    }
+
+    .cta-aurora::before,
+    .scroll-cue-dot,
+    .float-soft {
+      animation: none;
+    }
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes scroll-cue {
+  0% {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Cross-route shared elements (React <ViewTransition>): the type code morphs
+   from its landing card into the type hub hero. Let clicks pass through the
+   overlay, and skip the animation under reduced motion. */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(*) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
 @keyframes orb-breathe {
   0%,
   100% {

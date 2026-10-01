@@ -22,9 +22,31 @@
     "credit": "Compatibility is based on socionics intertype relations, mapped through the cognitive function stack."
   },
   "home": {
-    "kicker": "16 minds, mapped",
-    "title": "Explore the cosmos of personality",
-    "subtitle": "A bilingual, dark-cosmic tour of the 16 MBTI types, their cognitive functions, and how they connect."
+    "subtitle": "A bilingual, dark-cosmic tour of the 16 MBTI types, their cognitive functions, and how they connect.",
+    "eyebrow": "An atlas of the sixteen personalities",
+    "headlineTop": "Sixteen minds.",
+    "headlineBottom": "Which one is yours?",
+    "heroSubtitle": "Trace the cognitive functions behind every type, see how each one works, loves and clashes, and find the mind that feels like home.",
+    "cta": "Find your type",
+    "statsLabel": "At a glance",
+    "stats": {
+      "types": "personality types",
+      "functions": "cognitive functions",
+      "pairings": "type pairings"
+    },
+    "scrollCue": "Scroll",
+    "welcomeBack": "Welcome back, {code}",
+    "continueExploring": "continue exploring",
+    "welcomeBackAria": "Welcome back. Continue exploring {code}",
+    "picker": {
+      "eyebrow": "The sixteen",
+      "title": "Choose your type",
+      "subtitle": "Hover a card to light up its star. Choose one to fly in and open its full portrait.",
+      "filterLabel": "Filter by temperament",
+      "all": "All",
+      "cardAria": "{code}, {nickname}. Open its portrait",
+      "explore": "Explore"
+    }
   },
   "type": {
     "positions": {
