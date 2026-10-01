@@ -1,18 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import {
-  AnimatePresence,
-  LayoutGroup,
-  MotionConfig,
-  motion,
-  useReducedMotion,
-} from "motion/react";
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+} from "react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import type { Temperament, TypeCode } from "@/data/types";
 import { useRouter } from "@/i18n/navigation";
 import { isPlainPrimaryClick } from "@/lib/clickIntent";
+import { createSelectionController, type SelectionController } from "@/lib/selectionController";
 import { setMyType } from "@/lib/useMyType";
 import { useSceneStore } from "@/lib/sceneStore";
 import { useDir } from "@/lib/useDir";
@@ -42,9 +44,10 @@ type Filter = "all" | Temperament;
 
 /** Navigate this long after a selection if the camera hasn't arrived yet. */
 const NAV_TIMEOUT_MS = 700;
+/** If navigation hasn't unmounted the picker by then, undo the flight state. */
+const SETTLE_MS = 2000;
 
-const GRID =
-  "grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:gap-5 lg:grid-cols-4";
+const GRID = "grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:gap-5 lg:grid-cols-4";
 
 /**
  * The 16-type picker: temperament filter (ToggleGroup with a gliding pill),
@@ -61,54 +64,53 @@ export function TypePicker({ id, items, temperaments }: TypePickerProps) {
   const [filter, setFilter] = useState<Filter>("all");
   const [chosen, setChosen] = useState<TypeCode | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const pending = useRef<{ timer: number; unsubscribe: () => void } | null>(null);
+  const controllerRef = useRef<SelectionController<TypeCode> | null>(null);
 
-  // Leaving the landing (or unmounting mid-flight): stop listening, reset the scene.
-  useEffect(
-    () => () => {
-      if (pending.current) {
-        window.clearTimeout(pending.current.timer);
-        pending.current.unsubscribe();
-        pending.current = null;
-      }
+  // Ordering rules (guard before persisting, reduced-motion bypass, arrival
+  // vs timeout, settle) live in the unit-tested controller. It is created in
+  // an effect (refs are only touched outside render) and disposed on unmount.
+  useEffect(() => {
+    const controller = createSelectionController<TypeCode>({
+      persist: setMyType,
+      prefersReducedMotion: () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      startFlight: (code) => {
+        setChosen(code);
+        const scene = useSceneStore.getState();
+        scene.setHovered(null);
+        scene.setFlyingTo(code);
+      },
+      subscribeArrival: (code, onArrive) =>
+        useSceneStore.subscribe((s) => {
+          if (s.arrived === code) onArrive();
+        }),
+      navigate: (code) => router.push(`/types/${code.toLowerCase()}`),
+      // Navigation didn't unmount us (e.g. it failed): restore the picker.
+      onSettle: () => {
+        setChosen(null);
+        useSceneStore.getState().reset();
+      },
+      timeoutMs: NAV_TIMEOUT_MS,
+      settleMs: SETTLE_MS,
+    });
+    controllerRef.current = controller;
+    // Leaving the landing (or unmounting mid-flight): stop listening, reset the scene.
+    return () => {
+      controller.dispose();
+      controllerRef.current = null;
       useSceneStore.getState().reset();
-    },
-    [],
-  );
+    };
+  }, [router]);
 
-  const choose = useCallback(
-    (e: MouseEvent<HTMLAnchorElement>, code: TypeCode) => {
-      // Cmd/ctrl/shift/alt or non-primary clicks: plain link behaviour (new tab etc.).
-      if (!isPlainPrimaryClick(e)) return;
-      setMyType(code);
-      // Reduced motion: no flight — let the <Link> navigate right away.
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      e.preventDefault();
-      if (pending.current) return; // a flight is already under way
-
-      setChosen(code);
-      const scene = useSceneStore.getState();
-      scene.setHovered(null);
-      scene.setFlyingTo(code);
-
-      const href = `/types/${code.toLowerCase()}`;
-      let done = false;
-      const go = () => {
-        if (done) return;
-        done = true;
-        window.clearTimeout(timer);
-        unsubscribe();
-        router.push(href);
-      };
-      const timer = window.setTimeout(go, NAV_TIMEOUT_MS);
-      const unsubscribe = useSceneStore.subscribe((s) => {
-        if (s.arrived === code) go();
-      });
-      pending.current = { timer, unsubscribe };
-    },
-    [router],
-  );
+  const choose = useCallback((e: MouseEvent<HTMLAnchorElement>, code: TypeCode) => {
+    // Cmd/ctrl/shift/alt or non-primary clicks: plain link behaviour (new tab etc.).
+    if (!isPlainPrimaryClick(e)) return;
+    // Not mounted yet: plain link navigation.
+    const controller = controllerRef.current;
+    if (!controller) return;
+    // "native" (reduced motion): let the <Link> navigate right away.
+    // "flying" / "ignored": we navigate (or already are) after the flight.
+    if (controller.choose(code) !== "native") e.preventDefault();
+  }, []);
 
   const onFilter = (value: Filter[]) => {
     const next = value[0];
@@ -130,7 +132,11 @@ export function TypePicker({ id, items, temperaments }: TypePickerProps) {
   const showHeaders = filter === "all";
   const filterOptions: { value: Filter; label: string; color?: string }[] = [
     { value: "all", label: t("all") },
-    ...temperaments.map((tm) => ({ value: tm.key, label: tm.name, color: tm.color })),
+    ...temperaments.map((tm) => ({
+      value: tm.key,
+      label: tm.name,
+      color: tm.color,
+    })),
   ];
 
   const cardState = (code: TypeCode): CardState =>
@@ -186,7 +192,11 @@ export function TypePicker({ id, items, temperaments }: TypePickerProps) {
                         layoutId="temperament-pill"
                         aria-hidden
                         className="absolute inset-0 -z-10 rounded-full border border-[color-mix(in_oklab,var(--accent)_45%,transparent)] bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] shadow-[0_0_24px_-6px_var(--accent)]"
-                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 420,
+                          damping: 34,
+                        }}
                       />
                     )}
                     {opt.color && (
@@ -250,7 +260,10 @@ export function TypePicker({ id, items, temperaments }: TypePickerProps) {
                               initial={{ scaleX: 0 }}
                               whileInView={{ scaleX: 1 }}
                               viewport={{ once: true, amount: 1 }}
-                              transition={{ duration: 1.2, ease: EASE_OUT_EXPO }}
+                              transition={{
+                                duration: 1.2,
+                                ease: EASE_OUT_EXPO,
+                              }}
                             />
                           </div>
                           <p className="max-w-2xl text-sm text-pretty text-muted-foreground sm:text-base">
@@ -271,7 +284,10 @@ export function TypePicker({ id, items, temperaments }: TypePickerProps) {
                             item={item}
                             index={i}
                             state={cardState(item.code)}
-                            ariaLabel={t("cardAria", { code: item.code, nickname: item.nickname })}
+                            ariaLabel={t("cardAria", {
+                              code: item.code,
+                              nickname: item.nickname,
+                            })}
                             exploreLabel={t("explore")}
                             onChoose={choose}
                           />

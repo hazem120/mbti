@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdaptiveDpr, PerformanceMonitor } from "@react-three/drei";
+import { PerformanceMonitor } from "@react-three/drei";
 import { Bloom, EffectComposer, ToneMapping, Vignette } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
 
@@ -56,11 +56,13 @@ function readBackground(): string {
  * Client-only — load it through `CosmicBackdrop` (next/dynamic, ssr:false).
  *
  * Performance: DPR clamped to [1, 1.5]; `PerformanceMonitor` raises it to 2
- * on incline and drops it (and Bloom) on decline; `AdaptiveDpr` follows any
- * `performance.regress()` calls (none per frame: resizing the composer's
- * targets mid-flight would hitch); small screens and low-performance
- * fallbacks render 1500 stars instead of 4000. Reduced motion renders on
- * demand only (static composition, no flight).
+ * on incline and drops it (and Bloom) on decline; small screens and the
+ * low-performance fallback render 1500 stars instead of 4000. DPR is owned
+ * by PerformanceMonitor alone — no `AdaptiveDpr`/`performance.regress()`:
+ * regressing mid-flight resizes the composer's render targets and hitches.
+ * Reduced motion renders on demand only (static composition, no flight) and
+ * skips PerformanceMonitor, whose fps sampling would misread sparse demand
+ * frames as a slow device.
  */
 export default function CosmicScene({ dir = "ltr", onReady, onArrive }: CosmicSceneProps) {
   const reduced = usePrefersReducedMotion();
@@ -76,9 +78,18 @@ export default function CosmicScene({ dir = "ltr", onReady, onArrive }: CosmicSc
       dpr={dpr}
       flat
       frameloop={reduced ? "demand" : "always"}
-      gl={{ antialias: false, alpha: false, stencil: false, powerPreference: "high-performance" }}
-      camera={{ position: [0, 0, CAMERA_Z], fov: CAMERA_FOV, near: 0.1, far: 220 }}
-      performance={{ min: 0.6 }}
+      gl={{
+        antialias: false,
+        alpha: false,
+        stencil: false,
+        powerPreference: "high-performance",
+      }}
+      camera={{
+        position: [0, 0, CAMERA_Z],
+        fov: CAMERA_FOV,
+        near: 0.1,
+        far: 220,
+      }}
       // The canvas sits behind the page; listen on <body> so orbs still get
       // hover where the page is empty space (see `isOverContent`).
       eventSource={document.body}
@@ -86,23 +97,24 @@ export default function CosmicScene({ dir = "ltr", onReady, onArrive }: CosmicSc
     >
       <color attach="background" args={[background]} />
 
-      <PerformanceMonitor
-        flipflops={3}
-        onIncline={() => {
-          setDpr(Math.min(2, window.devicePixelRatio || 1));
-          setBloom(true);
-        }}
-        onDecline={() => {
-          setDpr([1, 1.5]);
-          setBloom(false);
-        }}
-        onFallback={() => {
-          setDpr(1);
-          setBloom(false);
-          setLite(true);
-        }}
-      />
-      <AdaptiveDpr />
+      {!reduced && (
+        <PerformanceMonitor
+          flipflops={3}
+          onIncline={() => {
+            setDpr(Math.min(2, window.devicePixelRatio || 1));
+            setBloom(true);
+          }}
+          onDecline={() => {
+            setDpr([1, 1.5]);
+            setBloom(false);
+          }}
+          onFallback={() => {
+            setDpr(1);
+            setBloom(false);
+            setLite(true);
+          }}
+        />
+      )}
 
       <CameraRig runtime={runtime} reduced={reduced} onArrive={onArrive} />
       <Starfield count={small || lite ? STARS_LITE : STARS_FULL} runtime={runtime} />
